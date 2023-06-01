@@ -114,7 +114,7 @@ if __name__ == '__main__':
     # Read data
     df = (spark.read
           .option('multiple', 'true')
-          .json('./downloads1/*.json')
+          .json('./downloads/*.json')
           .distinct()
           )
     df_cleaned = clean_data(df)
