@@ -18,7 +18,8 @@ def clean_data(df) -> ps.DataFrame:
     :return: dataframe
     """
     # Select columns of interests
-    df = (df.select(f.col('created_at').cast(TimestampType()),
+    df = (df.withColumn('created_at', f.to_timestamp(f.unix_timestamp('created_at', "yyyy-MM-dd'T'HH:mm:ss'Z'")))
+            .select('created_at',
                     f.col('created_at').cast(DateType()).alias('created_at_date'),
                     f.col('type'), f.col('payload.action').alias('payload_action'),
                     f.col('actor.id').alias('actor_id'),
@@ -103,14 +104,13 @@ def user_agg(df):
     # Write user aggregation
     df_user.write.csv('./agg_user.csv', header=True, mode='overwrite')
 
-def run():
+
+if __name__ == '__main__':
     spark = (SparkSession.builder
              .appName('PySpark SE')
              .getOrCreate()
              )
-
-
-    # download_month(YEAR, MONTH)
+    download_month(YEAR, MONTH)
     # Read data
     df = (spark.read
           .option('multiple', 'true')
@@ -120,8 +120,4 @@ def run():
     df_cleaned = clean_data(df)
     repo_agg(df_cleaned)
     user_agg(df_cleaned)
-
     spark.stop()
-
-if __name__ == '__main__':
-    run()
